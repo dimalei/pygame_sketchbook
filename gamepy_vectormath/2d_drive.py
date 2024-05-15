@@ -46,7 +46,7 @@ class Tank:
         self.body = pygame.image.load("body.png")
         self.tower = pygame.image.load("tower.png")
         self.pos = pygame.math.Vector2(200, 200)
-        self.heading_body = 0
+        self.heading_body = pygame.math.Vector2(1, 0) # tank spawns in direction X+
         self.heading_tower = pygame.math.Vector2(0, 0)
         self.vel = 0
         self.max_vel = 3
@@ -54,21 +54,20 @@ class Tank:
         self.max_rot_vel = 5
 
     def drive(self):
-
-        heading_vector = pygame.math.Vector2(
-            math.cos(math.radians(self.heading_body)), math.sin(math.radians(self.heading_body)))
-        self.pos = self.pos + heading_vector.normalize() * self.vel
+        self.pos = self.pos + self.heading_body.normalize() * self.vel
 
     def draw(self, window: pygame.Surface):
         # body
-        body = pygame.transform.rotate(self.body, -self.heading_body - 90),
+        # get the angle relative to Y- (direction of sprite drawn)
+        direction_body = pygame.math.Vector2(0, -1).angle_to(self.heading_body)
+        body = pygame.transform.rotate(self.body, - direction_body),
         offset_b = pygame.math.Vector2(body[0].get_rect().center)
         window.blit(body[0], self.pos - offset_b)
 
         # tower
-        direction = pygame.math.Vector2(
-            0, -1).angle_to(self.heading_tower)
-        tower = pygame.transform.rotate(self.tower, - direction)
+        # get the angle relative to Y- (direction of sprite drawn)
+        direction_tower = pygame.math.Vector2(0, -1).angle_to(self.heading_tower)
+        tower = pygame.transform.rotate(self.tower, - direction_tower)
         offset_b = pygame.math.Vector2(tower.get_rect().center)
         window.blit(tower, self.pos - offset_b)
 
@@ -127,10 +126,9 @@ class TankController:
         if self.tank.vel < -self.tank.max_vel:
             self.tank.vel = -self.tank.max_vel
 
+        # yaw rotation
         rot_accel = 2
-        if self.tank.vel < 0:
-            rot_accel *= -1
-        self.tank.heading_body += self.dir[0] * rot_accel
+        self.tank.heading_body.rotate_ip(self.dir[0] * rot_accel)
 
         self.tank.drive()
 
