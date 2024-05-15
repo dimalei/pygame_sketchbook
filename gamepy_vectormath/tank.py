@@ -1,47 +1,9 @@
 import pygame
-import math
-
-
-class Projectile:
-    def __init__(self, pos: pygame.math.Vector2, heading: pygame.math.Vector2, vel: float = 10) -> None:
-        self.pos = pos.copy()
-        self.heading = heading.copy()
-        self.vel = vel
-        self.age = 0
-
-    def update(self):
-        self.pos = self.pos + self.heading.normalize() * self.vel
-        self.age += 1
-
-    def draw(self, window: pygame.Surface):
-        pygame.draw.circle(window, (0, 0, 0), (self.pos[0], self.pos[1]), 5)
-
-
-class ProjectileCollection:
-    def __init__(self) -> None:
-        self.alive_projectiles = []
-        self.destruct_projectiles = []
-        self.max_age = 120
-
-    def update(self):
-        for p in self.alive_projectiles:
-            p.update()
-            if p.age > self.max_age:
-                self.destruct_projectiles.append(p)
-
-        self.destroy_projectiles()
-
-    def destroy_projectiles(self):
-        for p in self.destruct_projectiles:
-            self.alive_projectiles.remove(p)
-        self.destruct_projectiles = []
-
-    def draw(self, window: pygame.Surface):
-        for p in self.alive_projectiles:
-            p.draw(window)
+from projectiles import Projectile, Rocket, ProjectileCollection
 
 
 class Tank:
+    """The tank model of the game."""
     def __init__(self) -> None:
         self.body = pygame.image.load("body.png")
         self.tower = pygame.image.load("tower.png")
@@ -73,6 +35,7 @@ class Tank:
 
 
 class TankController:
+    """The Class controlling the tank through key and mouse input."""
     def __init__(self, tank: Tank) -> None:
         self.tank = tank
         self.dir = [0, 0]
@@ -134,44 +97,3 @@ class TankController:
 
     def draw(self, window):
         self.tank.draw(window)
-
-
-class TankApp:
-    def __init__(self) -> None:
-        pygame.init()
-        self.clock = pygame.time.Clock()
-        self.window = pygame.display.set_mode((800, 600))
-        self.tank = TankController(Tank())
-        self.projectiles = ProjectileCollection()
-
-    def run(self):
-        while True:
-            self.events()
-
-            self.tank.update()
-            self.projectiles.update()
-
-            self.render()
-            self.clock.tick(60)
-
-    def events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                exit()
-            if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-                self.tank.steer_body(event)
-            if event.type == pygame.MOUSEMOTION:
-                self.tank.steer_tower()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                self.tank.shoot(self.projectiles)
-
-    def render(self):
-        self.window.fill((200, 200, 200))
-        self.projectiles.draw(self.window)
-        self.tank.draw(self.window)
-        pygame.draw.circle(self.window, (0, 0, 255), pygame.mouse.get_pos(), 5)
-        pygame.display.flip()
-
-
-app = TankApp()
-app.run()
