@@ -46,7 +46,10 @@ class TankController:
     def __init__(self, tank: Tank) -> None:
         self.tank = tank
         self.dir = [0, 0]
+        self.max_ammo = 20
         self.ammo = 20
+        self.health = 100
+        self.boost_timer = 0
 
     def steer_body(self, event):
         if event.type == pygame.KEYDOWN:
@@ -75,8 +78,10 @@ class TankController:
         self.tank.heading_tower = heading.normalize()
 
     def shoot(self, projectiles: ProjectileCollection):
-        projectiles.alive_projectiles.append(
-            Projectile(self.tank.pos, self.tank.heading_tower))
+        if self.ammo > 0:
+            projectiles.alive_projectiles.append(
+                Projectile(self.tank.pos, self.tank.heading_tower))
+            self.ammo -= 1
 
     def update(self):
         # driving
@@ -92,10 +97,16 @@ class TankController:
         else:
             self.tank.vel = 0
 
-        if self.tank.vel > self.tank.max_vel:
-            self.tank.vel = self.tank.max_vel
-        if self.tank.vel < -self.tank.max_vel:
-            self.tank.vel = -self.tank.max_vel
+        # boost
+        max_vel = self.tank.max_vel
+        if self.boost_timer > 0:
+            max_vel += 2
+            self.boost_timer -= 1
+
+        if self.tank.vel > max_vel:
+            self.tank.vel = max_vel
+        if self.tank.vel < -max_vel:
+            self.tank.vel = -max_vel
 
         # yaw rotation
         rot_accel = 2
@@ -103,9 +114,34 @@ class TankController:
 
         self.tank.drive()
 
-    def pickup_item(self, item: object):
-        if self.tank.hitbox.colliderect(item.hitbox):
-            print("item collected!")
+    def pickup_items(self, items: list):
+        for i in items:
+            if self.tank.hitbox.colliderect(i.hitbox):
+                print(f"collected: {type(i)}")
+                i.collect()
+                if i.type == "ammo":
+                    self.fill_ammo()
+                if i.type == "health":
+                    self.health = 100
+                if i.type == "boost":
+                    self.boost_timer = 300
+
+
+
+    def fill_ammo(self):
+        self.ammo += 5
+        if self.ammo > self.max_ammo:
+            self.ammo = self.max_ammo
 
     def draw(self, window):
         self.tank.draw(window)
+
+    def draw_ui(self, window):
+        font = pygame.font.Font(None, 24)
+        ammo_str = f"Ammo: {self.ammo}"
+        ammo = font.render(ammo_str, True,  (10, 10, 10))
+        health_str = f"Health: {self.health}"
+        health = font.render(health_str, True,  (10, 10, 10))
+        window.blit(ammo, (10, 10))
+        window.blit(health, (10, 30))
+        pass
