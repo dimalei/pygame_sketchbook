@@ -16,6 +16,7 @@ class Projectile:
         self.size = size
         self.hitbox = pygame.Rect(0, 0, self.size, self.size)
         self.hitbox.center = self.pos
+        self.destroy = False
 
     def update(self):
         # update position and hitbox
@@ -25,6 +26,12 @@ class Projectile:
 
     def draw(self, window: pygame.Surface):
         pygame.draw.circle(window, (0, 0, 0), self.pos, self.size // 2)
+
+    def hit_something(self, hitted_object: "Projectile"):
+        # Destroy the hitted object and iself. 
+        self.destroy = True
+        hitted_object.destroy = True
+
 
     def __str__(self) -> str:
         return f"projectile flying at {self.pos}"
@@ -126,14 +133,18 @@ class ProjectileCollection:
             if p.age > self.max_age:
                 self.destruct_projectiles.append(p)
 
-            # check for collisions
+            # check for collisions with other projectiles
             collides_with = p.hitbox.collidelistall(
                 [i.hitbox for i in self.alive_projectiles])
             
             for c in collides_with:
+                # avoid self collison
                 if p != self.alive_projectiles[c]:
-                    self.destruct_projectiles.append(self.alive_projectiles[c])
-                    self.destruct_projectiles.append(p)
+                    p.hit_something(self.alive_projectiles[c])
+
+            # destroy projectile if hit
+            if p.destroy:
+                self.destruct_projectiles.append(p)
 
         self.destroy_projectiles()
 
