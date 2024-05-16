@@ -1,5 +1,5 @@
 import pygame
-from projectiles import Projectile, Rocket, ProjectileCollection
+from projectiles import Rocket, ProjectileCollection, TankRound
 from items import AmmoCrate, HealthCrate, BoostCrate
 import math
 from helpers import angle_between_vectors
@@ -95,9 +95,9 @@ class TankController:
     def shoot(self, projectiles: ProjectileCollection):
         if self.ammo > 0 and self.reload_timer == 0:
             projectiles.alive_projectiles.append(
-                Projectile(self.tank.pos, self.tank.heading_tower))
+                TankRound(self.tank.pos, self.tank.heading_tower))
             self.ammo -= 1
-            self.reload_timer = 60
+            self.reload_timer = 30
 
     def update(self):
         # reloading
@@ -158,7 +158,7 @@ class TankController:
                 if isinstance(i, Rocket):
                     print(f"got a hit from: {type(i)}")
                     i.destroy()
-                    self.health -= 25
+                    self.health -= 20
 
     def fill_ammo(self):
         self.ammo += 5

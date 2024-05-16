@@ -1,5 +1,5 @@
 import pygame
-from projectiles import Rocket, ProjectileCollection
+from projectiles import Rocket, ProjectileCollection, TankRound
 import math
 from helpers import angle_between_vectors
 
@@ -12,7 +12,7 @@ class RocketPod:
         self.base = pygame.image.load("rocket_pod_base.png")
         self.tower = pygame.image.load("rocket_pod_tower.png")
         self.heading = pygame.math.Vector2(0, 1)
-        self.timer = 0
+        self.timer = 30
         self.collection = collection
         self.target = target
         self.health = 100
@@ -23,10 +23,11 @@ class RocketPod:
     def update(self):
         """launches rockets every X seconds and turns itself into the players direction"""
 
-        self.timer += 1
-        if self.timer > 300:
+        if self.timer > 0:
+            self.timer -= 1
+        else:
             self.launch_rocket()
-            self.timer = 0
+            self.timer = 120
 
         target_direction = self.target.pos - self.pos
         angle_CCW = angle_between_vectors(
@@ -42,7 +43,16 @@ class RocketPod:
 
     def launch_rocket(self):
         self.collection.alive_projectiles.append(
-            Rocket(self.pos, self.heading, self.target))
+            Rocket(self.pos, self.heading, self.target, vel=3.5, agility=2))
+
+    def get_hit(self, items: list):
+        for i in items:
+            if self.hitbox.colliderect(i.hitbox):
+                # only count hits form the rocket class.
+                if isinstance(i, TankRound):
+                    print(f"got a hit from: {type(i)}")
+                    i.destroy()
+                    self.health -= 5
 
     def draw(self, window: pygame.Surface):
         offset_b = pygame.math.Vector2(self.base.get_rect().center)

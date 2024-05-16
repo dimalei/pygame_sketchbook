@@ -6,7 +6,6 @@ from helpers import angle_between_vectors
 import pygame.locals
 
 
-
 class Projectile:
     """Base projectile that the tank can shoot."""
 
@@ -30,14 +29,14 @@ class Projectile:
         pygame.draw.circle(window, (0, 0, 0), self.pos, self.size // 2)
 
     def hit_something(self, hitted_object: "Projectile"):
-        # Destroy the hitted object and iself. 
+        # Destroy the hitted object and iself.
         self.destroy()
         hitted_object.destroy()
 
     # destroy setter
     def destroy(self):
         self.__destroy = True
-    
+
     # destroy getter
     def get_destroy(self) -> bool:
         return self.__destroy
@@ -46,13 +45,18 @@ class Projectile:
         return f"projectile flying at {self.pos}"
 
 
+class TankRound(Projectile):
+    def __init__(self, pos: pygame.Vector2, heading: pygame.Vector2, vel: float = 10, size: int = 10) -> None:
+        super().__init__(pos, heading, vel, size)
+
+
 class Rocket(Projectile):
     """Advanced Projectile that homes onto a target."""
 
-    def __init__(self, pos: pygame.Vector2, heading: pygame.Vector2, target: object, vel: float = 3, size: int = 20) -> None:
+    def __init__(self, pos: pygame.Vector2, heading: pygame.Vector2, target: object, vel: float = 3, size: int = 20, agility: float = 1.0) -> None:
         super().__init__(pos, heading, vel, size)
         self.target = target
-        self.agility = 0.8  # can rotate X degrees per frame
+        self.agility = agility  # can rotate X degrees per frame
         self.rocket = pygame.image.load("rocket.png")
         self.smoke_trail = [self.pos.copy() for i in range(20)]
 
@@ -106,14 +110,13 @@ class Rocket(Projectile):
         return f"rocket flying at {self.pos} heading {self.heading}"
 
 
-
 class ProjectileCollection:
     """Projectile environment. All Projectiles must live within the same projectile collection."""
 
     def __init__(self) -> None:
         self.alive_projectiles = []
         self.destruct_projectiles = []
-        self.max_age = 7200
+        self.max_age = 3200
 
     def update(self):
         for p in self.alive_projectiles:
@@ -124,7 +127,7 @@ class ProjectileCollection:
             # check for collisions with other projectiles
             collides_with = p.hitbox.collidelistall(
                 [i.hitbox for i in self.alive_projectiles])
-            
+
             for c in collides_with:
                 # avoid self collison
                 if p != self.alive_projectiles[c]:

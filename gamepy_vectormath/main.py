@@ -23,11 +23,26 @@ class TankApp:
             self.crates.upate()
             self.player.pickup_items(self.crates.items)
             self.player.get_hit(self.projectiles.alive_projectiles)
+            self.enemy.get_hit(self.projectiles.alive_projectiles)
             self.enemy.update()
             self.projectiles.update()
 
             self.render()
+
+            if self.player.health <= 0:
+                self.game_over()
+                break
+            if self.enemy.health <= 0:
+                self.game_won()
+                break
+
             self.clock.tick(60)
+
+    def game_over(self):
+        pass
+
+    def game_won(self):
+        pass
 
     def events(self):
         for event in pygame.event.get():
