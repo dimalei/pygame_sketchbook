@@ -4,11 +4,11 @@ from items import ItemCollection
 from tank import Tank, TankController
 from enemies import RocketPod
 
-class TankApp:
-    def __init__(self) -> None:
-        pygame.init()
-        self.clock = pygame.time.Clock()
-        self.window = pygame.display.set_mode((800, 600))
+
+class GameSession:
+    def __init__(self, window: pygame.Surface, clock: pygame.time.Clock) -> bool:
+        self.window = window
+        self.clock = clock
         self.player = TankController(Tank())
         self.projectiles = ProjectileCollection()
         self.enemy = RocketPod(pygame.math.Vector2(
@@ -30,11 +30,10 @@ class TankApp:
             self.render()
 
             if self.player.health <= 0:
-                self.game_over()
-                break
+                return False
             if self.enemy.health <= 0:
                 self.game_won()
-                break
+                return True
 
             self.clock.tick(60)
 
@@ -68,5 +67,84 @@ class TankApp:
         pygame.display.flip()
 
 
-app = TankApp()
+class Button:
+    def __init__(self, text: str, pos_y: int) -> bool:
+        self.text = text
+        self.hover = False
+        self.shape = pygame.Rect(0, 0, 300, 60)
+        self.shape.center = (
+            pygame.display.get_surface().get_width()//2, pos_y)
+        self.pressed = False
+
+    def draw(self, window: pygame.Surface):
+        color = (10, 10, 10)
+        font = pygame.font.Font(None, 36)
+        text = font.render(self.text, True, color)
+        offset = pygame.math.Vector2(text.get_rect().center)
+
+        if self.hover:
+            pygame.draw.rect(window, (100, 100, 100), self.shape)
+        pygame.draw.rect(window, color, self.shape, width=2)
+        window.blit(text, self.shape.center - offset)
+            
+
+    def update(self):
+        if self.shape.collidepoint(pygame.mouse.get_pos()):
+            self.hover = True
+        else:
+            self.hover = False
+
+        if self.pressed:
+            self.pressed = False
+            return True
+
+        return False
+
+    def click(self):
+        if self.shape.collidepoint(pygame.mouse.get_pos()):
+            self.pressed = True
+
+class Application:
+    def __init__(self) -> None:
+        pygame.init()
+        self.clock = pygame.time.Clock()
+        self.window = pygame.display.set_mode((800, 600))
+        self.buttons = {
+            "play": Button("Play Game", pos_y=420),
+            "exit": Button("Exit", pos_y= 500)
+        }
+
+    def run(self):
+        while True:
+            self.events()
+            if self.buttons["play"].update():
+                g = GameSession(self.window, self.clock)
+                g.run()
+                pass
+            if self.buttons["exit"].update():
+                exit()
+
+            self.render()
+            self.clock.tick(60)
+
+    def events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for i, b in self.buttons.items():
+                    b.click()
+
+        
+
+    def render(self):
+        self.window.fill((200, 200, 200))
+
+        for i, b in self.buttons.items():
+            b.draw(self.window)
+
+        pygame.display.flip()
+
+
+app = Application()
 app.run()
