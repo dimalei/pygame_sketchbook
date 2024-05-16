@@ -8,18 +8,24 @@ import pygame.locals
 class Projectile:
     """Base projectile that the tank can shoot."""
 
-    def __init__(self, pos: pygame.math.Vector2, heading: pygame.math.Vector2, vel: float = 10) -> None:
+    def __init__(self, pos: pygame.math.Vector2, heading: pygame.math.Vector2, vel: float = 10, size: int = 10) -> None:
         self.pos = pos.copy()
         self.heading = heading.copy()
         self.vel = vel
         self.age = 0
+        self.size = size
+        self.hitbox = pygame.Rect(
+            (-self.size, -self.size), (self.size, self.size))
+        self.hitbox.center = self.pos
 
     def update(self):
+        # update position and hitbox
         self.pos = self.pos + self.heading.normalize() * self.vel
+        self.hitbox.center = self.pos
         self.age += 1
 
     def draw(self, window: pygame.Surface):
-        pygame.draw.circle(window, (0, 0, 0), self.pos, 5)
+        pygame.draw.circle(window, (0, 0, 0), self.pos, self.size//2)
 
     def __str__(self) -> str:
         return f"projectile flying at {self.pos}"
@@ -28,17 +34,21 @@ class Projectile:
 class Rocket(Projectile):
     """Advanced Projectile that homes onto a target."""
 
-    def __init__(self, pos: pygame.Vector2, heading: pygame.Vector2, target: object, vel: float = 3) -> None:
-        super().__init__(pos, heading, vel)
+    def __init__(self, pos: pygame.Vector2, heading: pygame.Vector2, target: object, vel: float = 3, size: int = 20) -> None:
+        super().__init__(pos, heading, vel, size)
         self.target = target
-        self.agility = 0.6  # can rotate X degrees per frame
+        self.agility = 0.8  # can rotate X degrees per frame
         self.target_direction = pygame.math.Vector2(1, 0)
         self.rocket = pygame.image.load("rocket.png")
         self.smoke_trail = [self.pos.copy() for i in range(20)]
 
     def update(self):
-        # fly
+        # update position and hitbox
         self.pos = self.pos + self.heading.normalize() * self.vel
+        self.hitbox.center = self.pos
+
+        # age
+        self.age += 5
 
         # smoke trail
         if self.age % 4 == 0:
@@ -47,9 +57,6 @@ class Rocket(Projectile):
                     self.smoke_trail[i] = self.pos
                 else:
                     self.smoke_trail[i] = self.smoke_trail[i+1]
-
-        # age
-        self.age += 5
 
         # home target
         self.target_direction = self.target.pos - self.pos
@@ -120,11 +127,21 @@ class ProjectileCollection:
             if p.age > self.max_age:
                 self.destruct_projectiles.append(p)
 
+            # check for collisions
+            collides_with = p.hitbox.collidelistall(
+                [i.hitbox for i in self.alive_projectiles])
+            print(f"collides with: {collides_with}")
+            for c in collides_with:
+                if p != self.alive_projectiles[c]:
+                    self.destruct_projectiles.append(self.alive_projectiles[c])
+                    self.destruct_projectiles.append(p)
+
         self.destroy_projectiles()
 
     def destroy_projectiles(self):
         for p in self.destruct_projectiles:
-            self.alive_projectiles.remove(p)
+            if p in self.alive_projectiles:
+                self.alive_projectiles.remove(p)
         self.destruct_projectiles = []
 
     def draw(self, window: pygame.Surface):

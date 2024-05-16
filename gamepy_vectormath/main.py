@@ -6,13 +6,13 @@ from tank import Tank, TankController
 class RocketPod:
     def __init__(self, collection: ProjectileCollection, target: object) -> None:
         self.pos = pygame.math.Vector2(400,100)
-        self.timer = 1199
+        self.timer = 0
         self.collection = collection
         self.target = target
     
     def update(self):
         self.timer += 1
-        if self.timer > 1200:
+        if self.timer > 300:
             self.launch_rocket()
             self.timer = 0
     
@@ -21,6 +21,11 @@ class RocketPod:
 
     def draw(self, window: pygame.Surface):
         pygame.draw.circle(window, (255,0,0), self.pos, 10)
+
+
+class AmmoCrate:
+    def __init__(self, ) -> None:
+        pass
 
 
 class TankApp:
