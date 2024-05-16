@@ -4,19 +4,24 @@ from projectiles import Projectile, Rocket, ProjectileCollection
 
 class Tank:
     """The tank model of the game."""
+
     def __init__(self) -> None:
         self.body = pygame.image.load("body.png")
         self.tower = pygame.image.load("tower.png")
         self.pos = pygame.math.Vector2(200, 200)
-        self.heading_body = pygame.math.Vector2(1, 0) # tank spawns in direction X+
+        self.heading_body = pygame.math.Vector2(
+            1, 0)  # tank spawns in direction X+
         self.heading_tower = pygame.math.Vector2(0, 0)
         self.vel = 0
         self.max_vel = 3
         self.rot_vel = 0
         self.max_rot_vel = 5
+        self.hitbox = pygame.Rect(0, 0, 100, 100)
+        self.hitbox.center = self.pos
 
     def drive(self):
         self.pos = self.pos + self.heading_body.normalize() * self.vel
+        self.hitbox.center = self.pos
 
     def draw(self, window: pygame.Surface):
         # body
@@ -28,7 +33,8 @@ class Tank:
 
         # tower
         # get the angle relative to Y- (direction of sprite drawn)
-        direction_tower = pygame.math.Vector2(0, -1).angle_to(self.heading_tower)
+        direction_tower = pygame.math.Vector2(
+            0, -1).angle_to(self.heading_tower)
         tower = pygame.transform.rotate(self.tower, - direction_tower)
         offset_b = pygame.math.Vector2(tower.get_rect().center)
         window.blit(tower, self.pos - offset_b)
@@ -36,9 +42,11 @@ class Tank:
 
 class TankController:
     """The Class controlling the tank through key and mouse input."""
+
     def __init__(self, tank: Tank) -> None:
         self.tank = tank
         self.dir = [0, 0]
+        self.ammo = 20
 
     def steer_body(self, event):
         if event.type == pygame.KEYDOWN:
@@ -94,6 +102,10 @@ class TankController:
         self.tank.heading_body.rotate_ip(self.dir[0] * rot_accel)
 
         self.tank.drive()
+
+    def pickup_item(self, item: object):
+        if self.tank.hitbox.colliderect(item.hitbox):
+            print("item collected!")
 
     def draw(self, window):
         self.tank.draw(window)

@@ -14,8 +14,7 @@ class Projectile:
         self.vel = vel
         self.age = 0
         self.size = size
-        self.hitbox = pygame.Rect(
-            (-self.size, -self.size), (self.size, self.size))
+        self.hitbox = pygame.Rect(0, 0, self.size, self.size)
         self.hitbox.center = self.pos
 
     def update(self):
@@ -25,7 +24,7 @@ class Projectile:
         self.age += 1
 
     def draw(self, window: pygame.Surface):
-        pygame.draw.circle(window, (0, 0, 0), self.pos, self.size//2)
+        pygame.draw.circle(window, (0, 0, 0), self.pos, self.size // 2)
 
     def __str__(self) -> str:
         return f"projectile flying at {self.pos}"
@@ -130,7 +129,7 @@ class ProjectileCollection:
             # check for collisions
             collides_with = p.hitbox.collidelistall(
                 [i.hitbox for i in self.alive_projectiles])
-            print(f"collides with: {collides_with}")
+            
             for c in collides_with:
                 if p != self.alive_projectiles[c]:
                     self.destruct_projectiles.append(self.alive_projectiles[c])
