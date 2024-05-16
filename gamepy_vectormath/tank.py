@@ -1,5 +1,7 @@
 import pygame
 from projectiles import Projectile, Rocket, ProjectileCollection
+from items import AmmoCrate, HealthCrate, BoostCrate
+import math
 
 
 class Tank:
@@ -9,13 +11,12 @@ class Tank:
         self.body = pygame.image.load("body.png")
         self.tower = pygame.image.load("tower.png")
         self.pos = pygame.math.Vector2(200, 200)
-        self.heading_body = pygame.math.Vector2(
-            1, 0)  # tank spawns in direction X+
-        self.heading_tower = pygame.math.Vector2(0, 0)
+        self.heading_body = pygame.math.Vector2(1, 0)
+        self.heading_tower = pygame.math.Vector2(1, 0)
         self.vel = 0
         self.max_vel = 3
-        self.rot_vel = 0
-        self.max_rot_vel = 5
+        self.agility = 2
+        self.tower_agility = 2
         self.hitbox = pygame.Rect(0, 0, 100, 100)
         self.hitbox.center = self.pos
 
@@ -74,8 +75,17 @@ class TankController:
 
     def steer_tower(self):
         # self.tank.heading_tower.update(pygame.mouse.get_pos())
-        heading = pygame.math.Vector2(pygame.mouse.get_pos()) - self.tank.pos
-        self.tank.heading_tower = heading.normalize()
+        target_direction = pygame.mouse.get_pos() - self.tank.pos
+        angle_CCW = self.angle_between_vectors(
+            self.tank.heading_tower, target_direction)
+        # steer rocket
+        print(angle_CCW)
+        if angle_CCW > self.tank.tower_agility:
+            self.tank.heading_tower = self.tank.heading_tower.rotate(self.tank.tower_agility)
+        elif angle_CCW < -self.tank.tower_agility:
+            self.tank.heading_tower = self.tank.heading_tower.rotate(-self.tank.tower_agility)
+        else:
+            self.tank.heading_tower = target_direction.normalize()
 
     def shoot(self, projectiles: ProjectileCollection):
         if self.ammo > 0:
@@ -109,29 +119,63 @@ class TankController:
             self.tank.vel = -max_vel
 
         # yaw rotation
-        rot_accel = 2
-        self.tank.heading_body.rotate_ip(self.dir[0] * rot_accel)
+        self.tank.heading_body.rotate_ip(self.dir[0] * self.tank.agility)
+        self.tank.heading_tower.rotate_ip(self.dir[0] * self.tank.agility)
+
+        # steer tower
+        self.steer_tower()
 
         self.tank.drive()
 
     def pickup_items(self, items: list):
         for i in items:
             if self.tank.hitbox.colliderect(i.hitbox):
-                print(f"collected: {type(i)}")
+                # destroy the item by calling collect()
                 i.collect()
-                if i.type == "ammo":
+
+                # get the effect of the item
+                if isinstance(i, AmmoCrate):
                     self.fill_ammo()
-                if i.type == "health":
+                if isinstance(i, HealthCrate):
                     self.health = 100
-                if i.type == "boost":
+                if isinstance(i, BoostCrate):
                     self.boost_timer = 300
 
-
+    def get_hit(self, items: list):
+        for i in items:
+            if self.tank.hitbox.colliderect(i.hitbox):
+                # only count hits form the rocket class.
+                if isinstance(i, Rocket):
+                    print(f"got a hit from: {type(i)}")
+                    i.destroy()
+                    self.health -= 25
 
     def fill_ammo(self):
         self.ammo += 5
         if self.ammo > self.max_ammo:
             self.ammo = self.max_ammo
+
+    def angle_between_vectors(self, v1, v2):
+        """returns the angle in between v1 and v2 from 180° to -180°"""
+        dot_product = v1[0] * v2[0] + v1[1] * v2[1]
+        magnitude_v1 = math.sqrt(v1[0]**2 + v1[1]**2)
+        magnitude_v2 = math.sqrt(v2[0]**2 + v2[1]**2)
+        cos_theta = dot_product / (magnitude_v1 * magnitude_v2)
+
+        if cos_theta > 1:
+            cos_theta = 1
+        elif cos_theta < -1:
+            cos_theta = -1
+
+        angle_radians = math.acos(cos_theta)
+        angle_degrees = math.degrees(angle_radians)
+
+        # Determine the sign of the angle using the cross product
+        cross_product = v1[0] * v2[1] - v1[1] * v2[0]
+        if cross_product < 0:
+            angle_degrees = -angle_degrees
+
+        return angle_degrees
 
     def draw(self, window):
         self.tank.draw(window)

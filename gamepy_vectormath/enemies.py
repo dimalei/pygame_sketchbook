@@ -32,10 +32,13 @@ class RocketPod:
             self.heading, target_direction)
 
         # steer rocket
-        if angle_CCW > 2:
+        if angle_CCW > self.agility:
             self.heading = self.heading.rotate(self.agility)
-        if angle_CCW < -2:
+        elif angle_CCW < -self.agility:
             self.heading = self.heading.rotate(-self.agility)
+        else:
+            self.heading = target_direction.normalize()
+
 
     def launch_rocket(self):
         self.collection.alive_projectiles.append(

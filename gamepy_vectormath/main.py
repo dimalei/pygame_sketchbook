@@ -22,6 +22,7 @@ class TankApp:
             self.player.update()
             self.crates.upate()
             self.player.pickup_items(self.crates.items)
+            self.player.get_hit(self.projectiles.alive_projectiles)
             self.enemy.update()
             self.projectiles.update()
 
@@ -34,8 +35,6 @@ class TankApp:
                 exit()
             if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
                 self.player.steer_body(event)
-            if event.type == pygame.MOUSEMOTION:
-                self.player.steer_tower()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.player.shoot(self.projectiles)
 
@@ -46,7 +45,7 @@ class TankApp:
         self.crates.draw(self.window)
         self.projectiles.draw(self.window)
         self.player.draw(self.window)
-        
+
         self.player.draw_ui(self.window)
         self.enemy.draw_ui(self.window)
 

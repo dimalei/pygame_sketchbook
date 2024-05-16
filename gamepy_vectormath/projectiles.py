@@ -16,7 +16,7 @@ class Projectile:
         self.size = size
         self.hitbox = pygame.Rect(0, 0, self.size, self.size)
         self.hitbox.center = self.pos
-        self.destroy = False
+        self.__destroy = False
 
     def update(self):
         # update position and hitbox
@@ -29,9 +29,16 @@ class Projectile:
 
     def hit_something(self, hitted_object: "Projectile"):
         # Destroy the hitted object and iself. 
-        self.destroy = True
-        hitted_object.destroy = True
+        self.destroy()
+        hitted_object.destroy()
 
+    # destroy setter
+    def destroy(self):
+        self.__destroy = True
+    
+    # destroy getter
+    def get_destroy(self) -> bool:
+        return self.__destroy
 
     def __str__(self) -> str:
         return f"projectile flying at {self.pos}"
@@ -143,7 +150,7 @@ class ProjectileCollection:
                     p.hit_something(self.alive_projectiles[c])
 
             # destroy projectile if hit
-            if p.destroy:
+            if p.get_destroy():
                 self.destruct_projectiles.append(p)
 
         self.destroy_projectiles()
