@@ -17,7 +17,7 @@ class Tank:
         self.vel = 0
         self.max_vel = 3
         self.agility = 2
-        self.tower_agility = 2
+        self.tower_agility = 3
         self.hitbox = pygame.Rect(0, 0, 100, 100)
         self.hitbox.center = self.pos
 

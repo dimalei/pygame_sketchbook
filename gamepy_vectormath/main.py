@@ -6,7 +6,7 @@ from enemies import RocketPod
 
 
 class GameSession:
-    def __init__(self, window: pygame.Surface, clock: pygame.time.Clock) -> bool:
+    def __init__(self, window: pygame.Surface, clock: pygame.time.Clock) -> str:
         self.window = window
         self.clock = clock
         self.arena = pygame.image.load("arena.png")
@@ -31,18 +31,12 @@ class GameSession:
             self.render()
 
             if self.player.health <= 0:
-                return False
+                return "lost"
             if self.enemy.health <= 0:
-                self.game_won()
-                return True
+                return "won"
 
             self.clock.tick(60)
 
-    def game_over(self):
-        pass
-
-    def game_won(self):
-        pass
 
     def events(self):
         for event in pygame.event.get():
@@ -111,7 +105,10 @@ class Application:
         pygame.init()
         self.clock = pygame.time.Clock()
         self.window = pygame.display.set_mode((800, 600))
-        self.bg = pygame.image.load("menu.png")
+        self.menu = pygame.image.load("menu.png")
+        self.lost = pygame.image.load("lost.png")
+        self.won = pygame.image.load("won.png")
+        self.state = "default"
         self.buttons = {
             "play": Button("Play Game", pos_y=420),
             "exit": Button("Exit", pos_y=500)
@@ -122,8 +119,8 @@ class Application:
             self.events()
             if self.buttons["play"].update():
                 g = GameSession(self.window, self.clock)
-                g.run()
-                pass
+                self.state = g.run()
+
             if self.buttons["exit"].update():
                 exit()
 
@@ -140,7 +137,12 @@ class Application:
 
     def render(self):
         self.window.fill((200, 200, 200))
-        self.window.blit(self.bg, (0,0))
+        if self.state == "won":
+            self.window.blit(self.won, (0,0))
+        elif self.state == "lost":
+            self.window.blit(self.lost, (0,0))
+        else:
+            self.window.blit(self.menu, (0,0))
 
         for i, b in self.buttons.items():
             b.draw(self.window)
