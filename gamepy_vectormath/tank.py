@@ -2,6 +2,7 @@ import pygame
 from projectiles import Projectile, Rocket, ProjectileCollection
 from items import AmmoCrate, HealthCrate, BoostCrate
 import math
+from helpers import angle_between_vectors
 
 
 class Tank:
@@ -21,6 +22,7 @@ class Tank:
         self.hitbox.center = self.pos
 
     def drive(self):
+        # move tank
         self.pos = self.pos + self.heading_body.normalize() * self.vel
         self.hitbox.center = self.pos
 
@@ -51,6 +53,7 @@ class TankController:
         self.ammo = 20
         self.health = 100
         self.boost_timer = 0
+        self.reload_timer = 0
 
     def steer_body(self, event):
         if event.type == pygame.KEYDOWN:
@@ -76,24 +79,31 @@ class TankController:
     def steer_tower(self):
         # self.tank.heading_tower.update(pygame.mouse.get_pos())
         target_direction = pygame.mouse.get_pos() - self.tank.pos
-        angle_CCW = self.angle_between_vectors(
+        angle_CCW = angle_between_vectors(
             self.tank.heading_tower, target_direction)
+
         # steer rocket
-        print(angle_CCW)
         if angle_CCW > self.tank.tower_agility:
-            self.tank.heading_tower = self.tank.heading_tower.rotate(self.tank.tower_agility)
+            self.tank.heading_tower = self.tank.heading_tower.rotate(
+                self.tank.tower_agility)
         elif angle_CCW < -self.tank.tower_agility:
-            self.tank.heading_tower = self.tank.heading_tower.rotate(-self.tank.tower_agility)
+            self.tank.heading_tower = self.tank.heading_tower.rotate(
+                -self.tank.tower_agility)
         else:
             self.tank.heading_tower = target_direction.normalize()
 
     def shoot(self, projectiles: ProjectileCollection):
-        if self.ammo > 0:
+        if self.ammo > 0 and self.reload_timer == 0:
             projectiles.alive_projectiles.append(
                 Projectile(self.tank.pos, self.tank.heading_tower))
             self.ammo -= 1
+            self.reload_timer = 60
 
     def update(self):
+        # reloading
+        if self.reload_timer > 0:
+            self.reload_timer -= 1
+        
         # driving
         # accelerating
         vel_accel = 0.1
@@ -155,34 +165,14 @@ class TankController:
         if self.ammo > self.max_ammo:
             self.ammo = self.max_ammo
 
-    def angle_between_vectors(self, v1, v2):
-        """returns the angle in between v1 and v2 from 180° to -180°"""
-        dot_product = v1[0] * v2[0] + v1[1] * v2[1]
-        magnitude_v1 = math.sqrt(v1[0]**2 + v1[1]**2)
-        magnitude_v2 = math.sqrt(v2[0]**2 + v2[1]**2)
-        cos_theta = dot_product / (magnitude_v1 * magnitude_v2)
-
-        if cos_theta > 1:
-            cos_theta = 1
-        elif cos_theta < -1:
-            cos_theta = -1
-
-        angle_radians = math.acos(cos_theta)
-        angle_degrees = math.degrees(angle_radians)
-
-        # Determine the sign of the angle using the cross product
-        cross_product = v1[0] * v2[1] - v1[1] * v2[0]
-        if cross_product < 0:
-            angle_degrees = -angle_degrees
-
-        return angle_degrees
-
     def draw(self, window):
         self.tank.draw(window)
 
     def draw_ui(self, window):
         font = pygame.font.Font(None, 24)
         ammo_str = f"Ammo: {self.ammo}"
+        if self.reload_timer > 0:
+            ammo_str = ammo_str + " [reloading]"
         ammo = font.render(ammo_str, True,  (10, 10, 10))
         health_str = f"Health: {self.health}"
         health = font.render(health_str, True,  (10, 10, 10))
