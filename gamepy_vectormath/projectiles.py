@@ -57,7 +57,7 @@ class Rocket(Projectile):
         super().__init__(pos, heading, vel, size)
         self.target = target
         self.agility = agility  # can rotate X degrees per frame
-        self.rocket = pygame.image.load("rocket.png")
+        self.rocket = pygame.image.load("gfx/rocket.png")
         self.smoke_trail = [self.pos.copy() for i in range(20)]
 
     def update(self):

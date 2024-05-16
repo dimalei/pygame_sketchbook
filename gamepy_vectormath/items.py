@@ -9,7 +9,7 @@ class Item:
         self.size = 50
         self.hitbox = pygame.Rect(0, 0, self.size, self.size)
         self.hitbox.center = self.pos
-        self.sprite = pygame.image.load("crate.png")
+        self.sprite = pygame.image.load("gfx/crate.png")
         self.collected = False
 
     def draw(self, window: pygame.Surface):
@@ -22,19 +22,19 @@ class Item:
 class AmmoCrate(Item):
     def __init__(self, pos: pygame.Vector2) -> None:
         super().__init__(pos)
-        self.sprite = pygame.image.load("crate.png")
+        self.sprite = pygame.image.load("gfx/crate.png")
         self.type = "ammo"
 
 class HealthCrate(Item):
     def __init__(self, pos: pygame.Vector2) -> None:
         super().__init__(pos)
-        self.sprite = pygame.image.load("health.png")
+        self.sprite = pygame.image.load("gfx/health.png")
         self.type = "health"
 
 class BoostCrate(Item):
     def __init__(self, pos: pygame.Vector2) -> None:
         super().__init__(pos)
-        self.sprite = pygame.image.load("no2.png")
+        self.sprite = pygame.image.load("gfx/no2.png")
         self.type = "boost"
 
 class ItemCollection:

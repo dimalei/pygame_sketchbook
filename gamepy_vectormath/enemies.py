@@ -9,8 +9,8 @@ class RocketPod:
 
     def __init__(self, pos: pygame.math.Vector2, collection: ProjectileCollection, target: object) -> None:
         self.pos = pos
-        self.base = pygame.image.load("rocket_pod_base.png")
-        self.tower = pygame.image.load("rocket_pod_tower.png")
+        self.base = pygame.image.load("gfx/rocket_pod_base.png")
+        self.tower = pygame.image.load("gfx/rocket_pod_tower.png")
         self.heading = pygame.math.Vector2(0, 1)
         self.timer = 90
         self.collection = collection

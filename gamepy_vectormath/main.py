@@ -9,7 +9,7 @@ class GameSession:
     def __init__(self, window: pygame.Surface, clock: pygame.time.Clock) -> str:
         self.window = window
         self.clock = clock
-        self.arena = pygame.image.load("arena.png")
+        self.arena = pygame.image.load("gfx/arena.png")
         self.player = TankController(Tank())
         self.projectiles = ProjectileCollection()
         self.enemy = RocketPod(pygame.math.Vector2(
@@ -105,9 +105,9 @@ class Application:
         pygame.init()
         self.clock = pygame.time.Clock()
         self.window = pygame.display.set_mode((800, 600))
-        self.menu = pygame.image.load("menu.png")
-        self.lost = pygame.image.load("lost.png")
-        self.won = pygame.image.load("won.png")
+        self.menu = pygame.image.load("gfx/menu.png")
+        self.lost = pygame.image.load("gfx/lost.png")
+        self.won = pygame.image.load("gfx/won.png")
         self.state = "default"
         self.buttons = {
             "play": Button("Play Game", pos_y=420),

@@ -9,8 +9,8 @@ class Tank:
     """The tank model of the game."""
 
     def __init__(self) -> None:
-        self.body = pygame.image.load("body.png")
-        self.tower = pygame.image.load("tower.png")
+        self.body = pygame.image.load("gfx/body.png")
+        self.tower = pygame.image.load("gfx/tower.png")
         self.pos = pygame.math.Vector2(200, 200)
         self.heading_body = pygame.math.Vector2(1, 0)
         self.heading_tower = pygame.math.Vector2(1, 0)
