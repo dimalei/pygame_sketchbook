@@ -1,10 +1,9 @@
 import pygame
 from random import randint
 
-## to do
-# hearts, speed power ups
 
 class Item:
+    """Baseclass for all items"""
     def __init__(self, pos: pygame.math.Vector2) -> None:
         self.pos = pos
         self.size = 50
@@ -39,6 +38,7 @@ class BoostCrate(Item):
         self.type = "boost"
 
 class ItemCollection:
+    """Class that manages all items."""
     def __init__(self, max_items: int = 2) -> None:
         self.items = []
         self.destruct_items = []

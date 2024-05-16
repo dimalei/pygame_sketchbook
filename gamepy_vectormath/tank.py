@@ -144,4 +144,3 @@ class TankController:
         health = font.render(health_str, True,  (10, 10, 10))
         window.blit(ammo, (10, 10))
         window.blit(health, (10, 30))
-        pass

@@ -37,7 +37,6 @@ class Rocket(Projectile):
         super().__init__(pos, heading, vel, size)
         self.target = target
         self.agility = 0.8  # can rotate X degrees per frame
-        self.target_direction = pygame.math.Vector2(1, 0)
         self.rocket = pygame.image.load("rocket.png")
         self.smoke_trail = [self.pos.copy() for i in range(20)]
 
@@ -58,9 +57,9 @@ class Rocket(Projectile):
                     self.smoke_trail[i] = self.smoke_trail[i+1]
 
         # home target
-        self.target_direction = self.target.pos - self.pos
+        target_direction = self.target.pos - self.pos
         angle_CCW = self.angle_between_vectors(
-            self.heading, self.target_direction)
+            self.heading, target_direction)
 
         # steer rocket
         if angle_CCW > 2:
@@ -91,6 +90,7 @@ class Rocket(Projectile):
         return f"rocket flying at {self.pos} heading {self.heading}"
 
     def angle_between_vectors(self, v1, v2):
+        """returns the angle in between v1 and v2 from 180° to -180°"""
         dot_product = v1[0] * v2[0] + v1[1] * v2[1]
         magnitude_v1 = math.sqrt(v1[0]**2 + v1[1]**2)
         magnitude_v2 = math.sqrt(v2[0]**2 + v2[1]**2)
