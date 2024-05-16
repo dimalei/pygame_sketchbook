@@ -12,7 +12,7 @@ class RocketPod:
         self.base = pygame.image.load("rocket_pod_base.png")
         self.tower = pygame.image.load("rocket_pod_tower.png")
         self.heading = pygame.math.Vector2(0, 1)
-        self.timer = 30
+        self.timer = 90
         self.collection = collection
         self.target = target
         self.health = 100

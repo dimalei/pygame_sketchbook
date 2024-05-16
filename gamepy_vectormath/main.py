@@ -9,6 +9,7 @@ class GameSession:
     def __init__(self, window: pygame.Surface, clock: pygame.time.Clock) -> bool:
         self.window = window
         self.clock = clock
+        self.arena = pygame.image.load("arena.png")
         self.player = TankController(Tank())
         self.projectiles = ProjectileCollection()
         self.enemy = RocketPod(pygame.math.Vector2(
@@ -54,6 +55,7 @@ class GameSession:
 
     def render(self):
         self.window.fill((200, 200, 200))
+        self.window.blit(self.arena, (0,0))
 
         self.enemy.draw(self.window)
         self.crates.draw(self.window)
@@ -86,7 +88,6 @@ class Button:
             pygame.draw.rect(window, (100, 100, 100), self.shape)
         pygame.draw.rect(window, color, self.shape, width=2)
         window.blit(text, self.shape.center - offset)
-            
 
     def update(self):
         if self.shape.collidepoint(pygame.mouse.get_pos()):
@@ -104,14 +105,16 @@ class Button:
         if self.shape.collidepoint(pygame.mouse.get_pos()):
             self.pressed = True
 
+
 class Application:
     def __init__(self) -> None:
         pygame.init()
         self.clock = pygame.time.Clock()
         self.window = pygame.display.set_mode((800, 600))
+        self.bg = pygame.image.load("menu.png")
         self.buttons = {
             "play": Button("Play Game", pos_y=420),
-            "exit": Button("Exit", pos_y= 500)
+            "exit": Button("Exit", pos_y=500)
         }
 
     def run(self):
@@ -135,10 +138,9 @@ class Application:
                 for i, b in self.buttons.items():
                     b.click()
 
-        
-
     def render(self):
         self.window.fill((200, 200, 200))
+        self.window.blit(self.bg, (0,0))
 
         for i, b in self.buttons.items():
             b.draw(self.window)
