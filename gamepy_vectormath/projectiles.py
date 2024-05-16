@@ -2,6 +2,8 @@
 import pygame
 import math
 
+import pygame.locals
+
 
 class Projectile:
     """Base projectile that the tank can shoot."""
@@ -26,32 +28,58 @@ class Projectile:
 class Rocket(Projectile):
     """Advanced Projectile that homes onto a target."""
 
-    def __init__(self, pos: pygame.Vector2, heading: pygame.Vector2, target: object, vel: float = 1) -> None:
+    def __init__(self, pos: pygame.Vector2, heading: pygame.Vector2, target: object, vel: float = 3) -> None:
         super().__init__(pos, heading, vel)
         self.target = target
-        self.agility = 1  # can rotate X degrees per frame
+        self.agility = 0.6  # can rotate X degrees per frame
         self.target_direction = pygame.math.Vector2(1, 0)
+        self.rocket = pygame.image.load("rocket.png")
+        self.smoke_trail = [self.pos.copy() for i in range(20)]
 
     def update(self):
+        # fly
         self.pos = self.pos + self.heading.normalize() * self.vel
+
+        # smoke trail
+        if self.age % 4 == 0:
+            for i, s in enumerate(self.smoke_trail):
+                if i + 1 == len(self.smoke_trail):
+                    self.smoke_trail[i] = self.pos
+                else:
+                    self.smoke_trail[i] = self.smoke_trail[i+1]
+
+        # age
         self.age += 5
 
+        # home target
         self.target_direction = self.target.pos - self.pos
-
-        angle_CCW = self.angle_between_vectors(self.heading, self.target_direction)
+        angle_CCW = self.angle_between_vectors(
+            self.heading, self.target_direction)
 
         # steer rocket
         if angle_CCW > 2:
             self.heading = self.heading.rotate(self.agility)
-        if angle_CCW < -2 :
+        if angle_CCW < -2:
             self.heading = self.heading.rotate(-self.agility)
 
     def draw(self, window: pygame.Surface):
-        pygame.draw.circle(window, (0, 0, 255), (self.pos[0], self.pos[1]), 10)
-        pygame.draw.line(window, (0, 0, 0), self.pos,
-                         self.pos + self.heading * 50, 5)
-        pygame.draw.line(window, (0, 255, 0), self.pos,
-                         self.pos + self.target_direction * 5, 2)
+        # smoke trail
+        color = (230, 230, 230)
+        width = 1
+        for i, s in enumerate(self.smoke_trail):
+            if i == len(self.smoke_trail) - 1:
+                pygame.draw.line(window, color,
+                                 s, self.pos, width)
+            else:
+                pygame.draw.line(window, color, s,
+                                 self.smoke_trail[i+1], width)
+            width += 1
+
+        # rocket
+        angle = pygame.math.Vector2(0, -1).angle_to(self.heading)
+        rotated = pygame.transform.rotate(self.rocket, - angle)
+        offset = pygame.math.Vector2(rotated.get_rect().center)
+        window.blit(rotated, self.pos - offset)
 
     def __str__(self) -> str:
         return f"rocket flying at {self.pos} heading {self.heading}"
