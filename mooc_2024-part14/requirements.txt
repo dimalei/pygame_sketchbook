@@ -1,1 +1,1 @@
-gamepy
+pygame
